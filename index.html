@@ -7,48 +7,95 @@
       <link rel="stylesheet" href="https://pyscript.net/releases/2024.2.1/core.css">
       <script type="module" src="https://pyscript.net/releases/2024.2.1/core.js"></script>
       <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+	  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+	  <link rel="stylesheet" href="style.css">
+
 
   </head>
   <body>
+	<div id="container">
 	  <textarea name="reddit-markup" id="markup" placeholder="Paste PC Price Tracker Reddit Markup here..."></textarea>
 	  <br>
-	  <input type='checkbox' id='remove-source'>Remove source</input>
-	  <input type='checkbox' id='repeat-ram' checked>Repeat RAM</input><br>
-	  <button py-click="markup_cleaner">Clean Markup</button>
+	  <span class="question">
+		Repeat RAM
+		<label class="switch">
+			<input type="checkbox" id='repeat-ram' checked>
+			<span class="slider round"></span>
+		</label>
+	  </span>
+
+	  <span class="question">
+		Remove Source
+		<label class="switch">
+			<input type="checkbox" id='remove-source'>
+			<span class="slider round"></span>
+		</label>
+	</span>
+	<br>
+	  <button py-click="markup_cleaner">Clean markup</button>
 	  <br>
 	  <h3>Here's your clean markup:</h3>
-	  <textarea id="clean-markup-text"></textarea>
-	  <div id="temp-text">Hello</div>
-	  <h3>And this is how it will look:</h3>
+	  <p>This can be edited</p>
+	  <textarea id="clean-markup-text" placeholder="Clean markup text will appear here..."></textarea>
+
+	  <button onclick="copyMarkup()">Copy cleaned markup</button>
+
+	  <h3>This is how it looks now:</h3>
 	  <div id="clean-table"></div>
-	  <h3>And this is what it looked like before cleanup:</h3>
+
+	  <h3>This is how it looked earlier:</h3>
 	  <div id="old-table"></div>
 
+	</div>
+	<div id="snackbar">Cleaned markup copied to clipboard</div>
+	<div id="footer">
+		<p>
+			Disclaimer: This site is in no way associated with
+			<a href="www.pcpricetracker.in">www.pcpricetracker.in</a>
+			Do not report issues faced here to the owners of that site.
+		</p>
+		<p>Q. What is this and who is this for?</p>
+		<p>
+			A. www.pcpricetracker.in is an Indian website which allows you to build PC
+			config and share it with others. It allows copying Reddit markup.
+			However, the markup is unweildy and doesn't show up very well on Reddit,
+			especially on mobile. This website allows you to clean up the markup.
+			It removes unnecessary information, shortens names, and optionally, removes the source.
+		</p>
+		<p>Q. Why should I use this?</p>
+		<p>A. You should use this if you want your build to be easily readable on your Reddit post.</p>
+		<p>Q. What do I do if I encounter an error?</p>
+		<p>A. If you encounter an error, there are two possibilities.
+			<ul>
+				<li>You have not pasted the full markup. To Solve, paste the full markup.</li>
+				<li>Something has changed with Reddit markup and this site has not been updated. Create a github issue.</li>
+			</ul>
+		</p>
+		<p>Q. Who do I sue if I incur a loss because of this website?</p>
+		<p>
+			A. No one. This website is being provided free of cost with no guarantees or warranties as to its features and functionality.
+			If you rely on it for any work which may lead to financial loss, you are solely responsible for such loss.
+		</p>
+
+	</div>
 	  <script type="py" src="./main.py" config="./pyscript.json"></script>
 
-	  <style>
-	  	#markup {
-	  		width: 1000px;
-	  		height: 200px;
-	  	}
+	  <script>
+		function copyMarkup() {
+			var copyText = document.getElementById("clean-markup-text");
+			// Select the text field
+			copyText.select();
+			copyText.setSelectionRange(0, 99999); // For mobile devices
+			navigator.clipboard.writeText(copyText.value);
+			copyText.blur();
+			showCopyToast();
+		  }
 
-	  	#clean-markup-text {
-	  		width: 1000px;
-	  		height: 350px;
-	  	}
-
-	  	body {
-	  		font-family: sans-serif;
-	  	}
-
-	  	td, table, thead, th {
-	  		border: 1px solid gray;
-	  		border-collapse: collapse;
-	  	}
-
-	  	td, th {
-	  		padding: 4px 4px 4px 4px;
-	  	}
-	  </style>
+		  function showCopyToast() {
+			var x = document.getElementById("snackbar");
+			x.className = "show";
+			setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+		  }
+	  </script>
   </body>
 </html>
