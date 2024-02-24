@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width,initial-scale=1" />
+      <title>PC Price Tracker Reddit Markup Cleaner</title>
+      <link rel="stylesheet" href="https://pyscript.net/releases/2024.2.1/core.css">
+      <script type="module" src="https://pyscript.net/releases/2024.2.1/core.js"></script>
+      <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+
+  </head>
+  <body>
+	  <textarea name="reddit-markup" id="markup" placeholder="Paste PC Price Tracker Reddit Markup here..."></textarea>
+	  <br>
+	  <input type='checkbox' id='remove-source'>Remove source</input>
+	  <input type='checkbox' id='repeat-ram' checked>Repeat RAM</input><br>
+	  <button py-click="markup_cleaner">Clean Markup</button>
+	  <br>
+	  <h3>Here's your clean markup:</h3>
+	  <textarea id="clean-markup-text"></textarea>
+	  <div id="temp-text">Hello</div>
+	  <h3>And this is how it will look:</h3>
+	  <div id="clean-table"></div>
+	  <h3>And this is what it looked like before cleanup:</h3>
+	  <div id="old-table"></div>
+
+	  <script type="py" src="./main.py" config="./pyscript.json"></script>
+
+	  <style>
+	  	#markup {
+	  		width: 1000px;
+	  		height: 200px;
+	  	}
+
+	  	#clean-markup-text {
+	  		width: 1000px;
+	  		height: 350px;
+	  	}
+
+	  	body {
+	  		font-family: sans-serif;
+	  	}
+
+	  	td, table, thead, th {
+	  		border: 1px solid gray;
+	  		border-collapse: collapse;
+	  	}
+
+	  	td, th {
+	  		padding: 4px 4px 4px 4px;
+	  	}
+	  </style>
+  </body>
+</html>
