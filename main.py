@@ -1,5 +1,40 @@
 from pyscript import document
 
+ITEM_MAP = {
+    "Processor": "CPU",
+    "Motherboard": "Mobo",
+    "Graphic Card": "GPU",
+    "Power Supply": "PSU",
+    "Cabinet": "Case",
+    "Memory": "RAM",
+    "Memory_2": "RAM2",
+    "Hard drive": "HDD",
+    "SSD drive": "SSD",
+    "Additional Monitor": "Monitor2",
+    "CPU Cooler": "Cooler",
+    "Keyboard": "KBD",
+    "Mouse": "MSE",
+}
+
+UNWANTED_WORDS = [
+    'desktop', 'computer',
+    'processor', 'lga', '1700', '1200', 'lga1700', 'lga1200',
+    'cpu', 'air', 'cooler', 'socket',
+    'geforce', 'radeon', 'graphics', 'graphic', 'card', 'gddr6', 'edition',
+    'motherboard', 'amd', 'intel', 'nvidia',
+    'ram', 'memory',
+    'series', 'micro', 'atx', 'm-atx', 'tower', 'mini', 'mid-tower',
+    'mini-tower', 'micro-tower', 'micro', 'case', 'full',
+    'with', 'and', 'cabinet', 'tempered', 'glass', 'side', 'panel',
+    'argb', 'rgb', 'controller',
+    'power', 'supply', 'designer', 'fully',
+    'smps', 'certified', 'certification', 'gaming',
+    'internal', 'ssd', 'solid', 'state', 'drive',
+    'hard', 'disk', 'surveillance', 'surveilance', '7200', '5400', 'rpm',
+    'enterprise', 'industry', 'industrial', 'sata',
+    'monitor', 'display', 'monitors', 'resolution', 'high',
+    'keyboard', 'mouse', 'headset', 'headphone',
+]
 
 def is_alphanumeric(string: str, min_numerals: int = 1) -> bool:
     """This function tells whether a string is alphanumeric."""
@@ -45,34 +80,13 @@ def remove_brackets(string: str) -> str:
     return string
 
 
-def clean_markup(markup: str, repeat_ram: bool = True, remove_source: bool = False) -> str:
-    """Cleans Reddit markup compied from PC Price Tracker website."""
-
-    unwanted_words = [
-        'desktop', 'computer',
-        'processor', 'lga', '1700', '1200', 'lga1700', 'lga1200',
-        'cpu', 'air', 'cooler', 'socket',
-        'geforce', 'radeon', 'graphics', 'graphic', 'card', 'gddr6', 'edition',
-        'motherboard', 'amd', 'intel', 'nvidia',
-        'ram', 'memory',
-        'series', 'micro', 'atx', 'm-atx', 'tower', 'mini', 'mid-tower', 'mini-tower', 'micro-tower', 'micor', 'case', 'full',
-        'with', 'cabinet', 'tempered', 'glass', 'side', 'panel',
-        'argb',
-        'rgb',
-        'power', 'supply', 'designer', 'fully',
-        'smps', 'certified', 'certification', 'gaming',
-        'internal',
-        'ssd', 'solid', 'state', 'drive',
-        'hard', 'disk', 'surveillance', 'surveilance', '7200', '5400', 'rpm', 'enterprise', 'industry', 'industrial', 'sata',
-        'monitor', 'display', 'monitors', 'resolution', 'high',
-        'keyboard', 'mouse', 'headset', 'headphone',
-    ]
-
+def clean_markup(markup, repeat_ram=True, remove_source=False):
     rows = markup.split('\n')
     clean_rows = [i for i in rows if i]
 
     link = clean_rows[0]
     headers = clean_rows[1].split('|')
+    headers[0] = 'Item'
     table = clean_rows[3:]
 
     config_dict = [dict(zip(headers, i.split('|'))) for i in table]
@@ -88,7 +102,7 @@ def clean_markup(markup: str, repeat_ram: bool = True, remove_source: bool = Fal
     for i in config:
         item_pair = i['Selection'].split(']')
         item = remove_brackets(item_pair[0][1:].lower())
-        item = ' '.join(i for i in item.split() if i not in unwanted_words)
+        item = ' '.join(i for i in item.split() if i not in UNWANTED_WORDS)
         ite = []
         for j in item.split():
             if len(j) < 4:
@@ -99,15 +113,17 @@ def clean_markup(markup: str, repeat_ram: bool = True, remove_source: bool = Fal
             else:
                 ite.append(j.title())
         i['Selection'] = f"[{' '.join(ite)}]{item_pair[1]}"
+        i['Item'] = ITEM_MAP.get(i['Item'], i['Item'])
+        i['Source'] = i['Source'].split()[0]
 
     if repeat_ram:
-        ram_list = [(i, j) for i, j in enumerate(config) if j['Category']=='Memory']
+        ram_list = [(i, j) for i, j in enumerate(config) if j['Item']=='RAM']
         ram_dict = ram_list[0][1].copy()
-        ram_dict['Category'] = 'Memory_2'
+        ram_dict['Item'] = 'RAM_2'
         config.insert(ram_list[0][0]+1, ram_dict)
 
     total_price = sum(int(i['Price']) for i in config)
-    total_price_markup = f"**Total**|{'' if remove_source else '|'}|**{total_price}**"
+    total_price_markup = f"Total|{'' if remove_source else '|'}|{total_price}"
 
     if remove_source:
         for i in config:
@@ -122,7 +138,8 @@ def clean_markup(markup: str, repeat_ram: bool = True, remove_source: bool = Fal
         pretty_markup.append('|'.join(i.values()))
 
     pretty_markup.append(total_price_markup)
-    return '\n'.join(pretty_markup)
+    config_table = link + '\n' + '\n'.join(pretty_markup)
+    return config_table
 
 
 def markup_cleaner(event):
