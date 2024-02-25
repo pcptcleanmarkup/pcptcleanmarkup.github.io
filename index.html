@@ -19,8 +19,8 @@
 	  <span class="question">
 		Repeat RAM
 		<label class="switch">
-			<input type="checkbox" id='repeat-ram' checked>
-			<span class="slider round"></span>
+			<input type="checkbox" id='repeat-ram'>
+			<span class="slider round" title="Add only one RAM and select this option to make it dual channel"></span>
 		</label>
 	  </span>
 
@@ -28,7 +28,7 @@
 		Remove Source
 		<label class="switch">
 			<input type="checkbox" id='remove-source'>
-			<span class="slider round"></span>
+			<span class="slider round"  title="Remove column with shop names"></span>
 		</label>
 	</span>
 	<br>
@@ -39,6 +39,7 @@
 	  <textarea id="clean-markup-text" placeholder="Clean markup text will appear here..."></textarea>
 
 	  <button onclick="copyMarkup()">Copy cleaned markup</button>
+	  <button onclick="previewTable()">Preview</button>
 
 	  <h3>This is how it looks now:</h3>
 	  <div id="clean-table"></div>
@@ -95,6 +96,12 @@
 			var x = document.getElementById("snackbar");
 			x.className = "show";
 			setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+		  }
+
+		  function previewTable() {
+			var output = document.getElementById("clean-table");
+			var input = document.getElementById("clean-markup-text").value
+			output.innerHTML = '<md-block>' + input + '</md-block>'
 		  }
 	  </script>
   </body>
