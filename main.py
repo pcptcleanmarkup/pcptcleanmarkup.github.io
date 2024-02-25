@@ -18,7 +18,7 @@ ITEM_MAP = {
 
 UNWANTED_WORDS = [
     'desktop', 'computer',
-    'processor', 'lga', '1700', '1200', 'lga1700', 'lga1200',
+    'processor', 'lga', '1700', 'lga1700', 'lga1200',
     'cpu', 'air', 'cooler', 'socket',
     'geforce', 'radeon', 'graphics', 'graphic', 'card', 'gddr6', 'edition',
     'motherboard', 'amd', 'intel', 'nvidia',
@@ -35,6 +35,16 @@ UNWANTED_WORDS = [
     'monitor', 'display', 'monitors', 'resolution', 'high',
     'keyboard', 'mouse', 'headset', 'headphone',
 ]
+
+COMMON_WORD_REPLACMENTS = {
+    'Cooler Master': 'CM',
+    'Western Digital': 'WD',
+    'Corsair Vengeance': 'Corsair',
+    'HZ': 'Hz',
+    ' INCH': '"',
+    'INCH': '"',
+    'NVME': 'NVMe'
+}
 
 def is_alphanumeric(string: str, min_numerals: int = 1) -> bool:
     """This function tells whether a string is alphanumeric."""
@@ -54,6 +64,11 @@ def is_alphanumeric(string: str, min_numerals: int = 1) -> bool:
         return True
 
     return False
+
+
+def len_sans_symbols(string: str) -> int:
+    """Returns the length of the string considering only alphanumeric characters"""
+    return len([i for i in string if (i.isalpha() or i.isnumeric())])
 
 
 def remove_brackets(string: str) -> str:
@@ -80,6 +95,38 @@ def remove_brackets(string: str) -> str:
     return string
 
 
+def smart_capitalize(string: str) -> str:
+    """Smartly decides how to capitalize the given word"""
+
+    if ' ' in string:
+        raise ValueError("Argument contains spaces. Pass only one word at a time")
+
+    symbols = './-'
+    symbols_in_string = [(i, i in string) for i in symbols]
+
+    for c, b in symbols_in_string:
+        if b:
+            string = c.join([smart_capitalize(i) for i in string.split(c)])
+
+    if any(i[1] for i in symbols_in_string):
+        return string
+
+    vowels = 'aeiou'
+    if len(string) < 5:
+        vowel_count = sum(i in vowels for i in string)
+        if vowel_count == 1 and (string[0] in vowels or string[-1] in vowels):
+            new_string = string.upper()
+        elif not vowel_count:
+            new_string = string.upper()
+        else:
+            new_string = string.capitalize()
+    elif is_alphanumeric(string):
+        new_string = string.upper()
+    else:
+        new_string = string.capitalize()
+    return new_string
+
+
 def clean_markup(markup, repeat_ram=True, remove_source=False):
     rows = markup.split('\n')
     clean_rows = [i for i in rows if i]
@@ -103,16 +150,18 @@ def clean_markup(markup, repeat_ram=True, remove_source=False):
         item_pair = i['Selection'].split(']')
         item = remove_brackets(item_pair[0][1:].lower())
         item = ' '.join(i for i in item.split() if i not in UNWANTED_WORDS)
+
         ite = []
         for j in item.split():
-            if len(j) < 4:
-                ite.append(j.upper())
-            elif is_alphanumeric(j):
-                if len([i for i in j if i not in ('/.-')]) < 12:
-                    ite.append(j.upper())
-            else:
-                ite.append(j.title())
-        i['Selection'] = f"[{' '.join(ite)}]{item_pair[1]}"
+            if len_sans_symbols(j) > 12 and is_alphanumeric(j):
+                continue
+            ite.append(smart_capitalize(j))
+        item = ' '.join(ite)
+
+        for k, v in COMMON_WORD_REPLACMENTS.items():
+            item = item.replace(k, v)
+
+        i['Selection'] = f"[{item}]{item_pair[1]}"
         i['Item'] = ITEM_MAP.get(i['Item'], i['Item'])
         i['Source'] = i['Source'].split()[0]
 
@@ -123,7 +172,7 @@ def clean_markup(markup, repeat_ram=True, remove_source=False):
         config.insert(ram_list[0][0]+1, ram_dict)
 
     total_price = sum(int(i['Price']) for i in config)
-    total_price_markup = f"Total|{'' if remove_source else '|'}|{total_price}"
+    total_price_markup = f"**Total**|{'' if remove_source else '|'}|**{total_price}**"
 
     if remove_source:
         for i in config:
