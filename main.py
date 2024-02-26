@@ -8,6 +8,7 @@ ITEM_MAP = {
     "Cabinet": "Case",
     "Memory": "RAM",
     "Memory_2": "RAM2",
+    "Additional Memory": "RAM2",
     "Hard drive": "HDD",
     "SSD drive": "SSD",
     "Additional Monitor": "Monitor2",
@@ -114,7 +115,7 @@ def smart_capitalize(string: str) -> str:
     vowels = 'aeiou'
     if len(string) < 5:
         vowel_count = sum(i in vowels for i in string)
-        if vowel_count == 1 and (string[0] in vowels or string[-1] in vowels):
+        if (vowel_count == 1 and (string[0] in vowels or string[-1] in vowels)) or vowel_count == len(string):
             new_string = string.upper()
         elif not vowel_count:
             new_string = string.upper()
@@ -163,7 +164,10 @@ def clean_markup(markup, repeat_ram=True, remove_source=False):
 
         i['Selection'] = f"[{item}]{item_pair[1]}"
         i['Item'] = ITEM_MAP.get(i['Item'], i['Item'])
-        i['Source'] = i['Source'].split()[0]
+        source_name = i['Source'].split()
+        print(source_name)
+        i['Source'] = source_name[1 if source_name[0] == 'The' else 0]
+        print(i['Source'])
 
     if repeat_ram:
         ram_list = [(i, j) for i, j in enumerate(config) if j['Item']=='RAM']
